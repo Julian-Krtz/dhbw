@@ -11,5 +11,5 @@ void ausgabe(const char* text, ...) {
 }
 
 int main() {
-    ausgabe("Hallo", "Welt", "Hallo", "Universum");
+    ausgabe("Hallo", "Welt", "Hallo", "Universum", NULL);
 }
