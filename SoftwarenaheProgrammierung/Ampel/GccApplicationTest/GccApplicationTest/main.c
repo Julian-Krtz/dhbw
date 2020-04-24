@@ -10,15 +10,14 @@
 
 struct ampel  
 {
-	uint8_t gruen;
-	uint8_t gelb;
-	uint8_t rot;
+	int gruen;
+	int gelb;
+	int rot;
+	uint8_t* port;
 };
 
-uint8_t changepin(uint8_t port, int pin, int newValue) {
-	//return newValue << (pin) | (0xFF & ~1<<(pin));
-	//return (port & ~1 << (pin+1))| (newValue << (pin+1) | 0x00);
-	return (port & ~ (1 << (pin)) ) | (newValue << (pin));  
+uint8_t changepin(uint8_t* port, int pin, int newValue) {
+	return (*port & ~ (1 << (pin)) ) | (newValue << (pin));  
 }
 
 int potenz(int basis, int exponent) {
@@ -27,13 +26,36 @@ int potenz(int basis, int exponent) {
 	return basis * potenz(basis, exponent-1);
 }
 
+void goGreen(struct ampel a) {
+	PORTC = changepin(a.port,a.rot, 1);
+	PORTC = changepin(a.port,a.gelb, 1);
+	PORTC = changepin(a.port,a.gruen, 0);		
+	_delay_ms(2000);
+	PORTC = changepin(a.port,a.rot, 0);
+	PORTC = changepin(a.port,a.gelb, 0);
+	PORTC = changepin(a.port,a.gruen, 1);
+}
+
+void goRed(struct ampel a) {
+	PORTC = changepin(a.port,a.rot, 0);
+	PORTC = changepin(a.port,a.gelb, 1);
+	PORTC = changepin(a.port,a.gruen, 0);
+	_delay_ms(2000);
+	PORTC = changepin(a.port,a.rot, 1);
+	PORTC = changepin(a.port,a.gelb, 0);
+	PORTC = changepin(a.port,a.gruen, 0);
+}
+
 int main(void)
 {
 	struct ampel ampel1;
-	//ampel1.gruen = 
+	ampel1.gruen = 0;
+	ampel1.gelb = 1;
+	ampel1.rot = 2;
+	ampel1.port = &PORTC;
 	
 	DDRC = 0xFF;
-	PORTC = 0xFF;
+	PORTC = 0x00;
 	/*
 	DDRB=0xFF;
 	PORTB=0xFF;
@@ -41,10 +63,10 @@ int main(void)
 	PORTC=0xFF; */
 	while (1)
 	{
-		PORTC = 0xFF;
-		_delay_ms(1000);
-		PORTC = changepin(PORTC,3,0);
-		_delay_ms(1000);
+		goGreen(ampel1);
+		_delay_ms(2000);
+		goRed(ampel1);
+		_delay_ms(2000);
 
 		/*PORTB=0xFF;
 		PORTC <<= 1;
